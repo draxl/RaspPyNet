@@ -2,6 +2,9 @@ import socket, time, pickle, os, threading
 from threading import Thread
 from subprocess import check_output
 
+import dot3k.backlight as backlight
+import dot3k.lcd as lcd
+
 start_time = time.time()
 
 ips = check_output(['hostname', '--all-ip-addresses'])
@@ -42,6 +45,14 @@ def main():
    thread3 = Thread(target=renewStatus)
    thread3.start()
 
+def lcdInfo( lcdMessage, line ):
+
+    lcd.set_cursor_position( 0, line )
+    lcd.write(lcdMessage)
+    backlight.rgb(0, 255, 0)
+    time.sleep(2)
+
+
 def statusCheker():
 	global nodesList
 	threading.Timer(60.0, statusCheker).start()
@@ -76,6 +87,7 @@ def startServer():
     global nodesList
     nodesList.append([host, 0, "server"])
     print("Starting Server...")
+    lcdInfo("Starting Server", 0 )
     
     def checkIp(data):
         tmp = False
@@ -126,7 +138,8 @@ def startServer():
     threadCounter.start()
 
 def startClient():
-    print("Starting Client...")                   
+    print("Starting Client...")
+    lcdInfo("Starting Client", 0 )
         
     def defineServer():
 		global serverHost
@@ -172,6 +185,7 @@ def displyaList():
             #print("ip:		port:")
             for item in nodesList:
                 print(str(item[0]) + " " + str(item[1]) + "  " + str(item[2]))
+                lcdInfo( str(item[0]) + " " + str(item[1]) + "  " + str(item[2]), 2 )
 
 def renewStatus():
     pass
