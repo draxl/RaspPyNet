@@ -2,6 +2,9 @@ import socket, time, pickle, os, threading
 from threading import Thread
 from subprocess import check_output
 
+import dot3k.backlight as backlight
+import dot3k.lcd as lcd
+
 start_time = time.time()
 
 ips = check_output(['hostname', '--all-ip-addresses'])
@@ -42,6 +45,39 @@ def main():
    thread3 = Thread(target=renewStatus)
    thread3.start()
 
+   thread4 = Thread(target=ledNodes)
+   thread4.start()
+
+def ledNodes():
+
+    global nodesList
+    #shutdown all LEDs
+    for x in range (0,9):
+        backlight.set_bar(x,0)
+        time.sleep(0.05)
+
+    threading.Timer(5.0, ledNodes).start()
+
+    if len(nodesList) <= 0:
+        for x in range (0,9):
+            backlight.set_bar(x,100)
+    else:
+        for x in range(0,len(nodesList)):
+
+            backlight.set_bar(x,255)
+
+
+
+def lcdInfo( lcdMessage, line, rgb="" ):
+
+    lcd.set_cursor_position( 0, line )
+    lcd.write(lcdMessage)
+    if rgb == "red" :
+        backlight.rgb(200,0,0)
+    if rgb == "green" :
+        backlight.rgb(0,200,0)
+
+
 def statusCheker():
 	global nodesList
 	threading.Timer(60.0, statusCheker).start()
@@ -76,6 +112,7 @@ def startServer():
     global nodesList
     nodesList.append([host, 0, "server"])
     print("Starting Server...")
+    lcdInfo("Starting Server", 0, "red" )
     
     def checkIp(data):
         tmp = False
@@ -126,7 +163,8 @@ def startServer():
     threadCounter.start()
 
 def startClient():
-    print("Starting Client...")                   
+    print("Starting Client...")
+    lcdInfo("Starting Client", 0,"green" )
         
     def defineServer():
 		global serverHost
@@ -172,6 +210,7 @@ def displyaList():
             #print("ip:		port:")
             for item in nodesList:
                 print(str(item[0]) + " " + str(item[1]) + "  " + str(item[2]))
+                lcdInfo( str(item[0]) + " " + str(item[1]) + "  " + str(item[2]), 2 )
 
 def renewStatus():
     pass
